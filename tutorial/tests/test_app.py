@@ -40,11 +40,11 @@ def test_list_images(client):
 # With clever composition of fixtures, we can observe what happens with
 # the mock injected into the image resource.
 def test_post_image(client, mock_store):
-    file_name = 'fake-image-name.xyz'
+    file_name = 'fake-image-name.png'
 
     # We need to know what ImageStore method will be used
     mock_store.save.return_value = file_name
-    image_content_type = 'image/xyz'
+    image_content_type = 'image/png'
 
     response = client.simulate_post(
         '/images',
@@ -60,6 +60,22 @@ def test_post_image(client, mock_store):
     # tuple of positional arguments supplied when calling the mock.
     assert isinstance(saver_call[0][0], falcon.request_helpers.BoundedStream)
     assert saver_call[0][1] == image_content_type
+
+
+def test_post_unknown_image_type(client, mock_store):
+    file_name = 'unknown-image-type.zzz'
+
+    mock_store.save.return_value = file_name
+    image_content_type = 'image/zzz'
+
+    response = client.simulate_post(
+        '/images',
+        body=b'fake-bytes',
+        headers={'content-type': image_content_type}
+    )
+
+    assert response.status == falcon.HTTP_BAD_REQUEST
+
 
 def test_saving_image(monkeypatch):
     mock_file_open = mock_open()
