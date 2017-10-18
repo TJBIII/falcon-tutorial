@@ -1,4 +1,4 @@
-import json
+import msgpack
 
 import falcon
 
@@ -13,4 +13,6 @@ class Resource(object):
             ]
         }
 
-        resp.body = json.dumps(doc, ensure_ascii=False)
+        resp.data = msgpack.packb(doc, use_bin_type=True)
+        resp.content_type = falcon.MEDIA_MSGPACK
+        resp.status = falcon.HTTP_200
